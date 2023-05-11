@@ -1,31 +1,32 @@
-import { Logo } from '@pmndrs/branding'
+import { Logo } from "@pmndrs/branding";
 import {
   AiOutlineHighlight,
   AiOutlineShopping,
   AiFillCamera,
-  AiOutlineArrowLeft
-} from 'react-icons/ai'
-import { useSnapshot } from 'valtio'
-import { state } from './store'
-import { motion, AnimatePresence } from 'framer-motion'
+  AiOutlineArrowLeft,
+} from "react-icons/ai";
+import { useSnapshot } from "valtio";
+import { state } from "./store";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function Overlay() {
-  const snap = useSnapshot(state)
+export default function Overlay({ setImagePath,setfullImagePath }) {
+  const snap = useSnapshot(state);
 
-  const transition = { type: 'spring', duration: 0.8 }
+  const transition = { type: "spring", duration: 0.8 };
 
   const config = {
     initial: { x: -100, opacity: 0, transition: { ...transition, delay: 0.5 } },
     animate: { x: 0, opacity: 1, transition: { ...transition, delay: 0 } },
-    exit: { x: -100, opacity: 0, transition: { ...transition, delay: 0 } }
-  }
+    exit: { x: -100, opacity: 0, transition: { ...transition, delay: 0 } },
+  };
 
   return (
     <div className="container">
       <motion.header
         initial={{ opacity: 0, y: -120 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', duration: 1.8, delay: 1 }}>
+        transition={{ type: "spring", duration: 1.8, delay: 1 }}
+      >
         <Logo width="40" height="40" />
         <div>
           <AiOutlineShopping size="3em" />
@@ -36,11 +37,16 @@ export default function Overlay() {
         {snap.intro ? (
           <Intro key="main" config={config} />
         ) : (
-          <Customizer key="custom" config={config} />
+          <Customizer
+            key="custom"
+            config={config}
+            setImagePath={setImagePath}
+            setfullImagePath={setfullImagePath}
+          />
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
 
 function Intro({ config }) {
@@ -58,19 +64,20 @@ function Intro({ config }) {
               define your own style.
             </p>
             <button
-              style={{ background: 'black' }}
-              onClick={() => (state.intro = false)}>
+              style={{ background: "black" }}
+              onClick={() => (state.intro = false)}
+            >
               CUSTOMIZE IT <AiOutlineHighlight size="1.3em" />
             </button>
           </div>
         </div>
       </div>
     </motion.section>
-  )
+  );
 }
 
-function Customizer({ config }) {
-  const snap = useSnapshot(state)
+function Customizer({ config, setImagePath,setfullImagePath }) {
+  const snap = useSnapshot(state);
 
   return (
     <motion.section {...config}>
@@ -81,7 +88,8 @@ function Customizer({ config }) {
               key={color}
               className="circle"
               style={{ background: color }}
-              onClick={() => (state.selectedColor = color)}></div>
+              onClick={() => (state.selectedColor = color)}
+            ></div>
           ))}
         </div>
 
@@ -91,28 +99,67 @@ function Customizer({ config }) {
               <div
                 key={decal}
                 className="decal"
-                onClick={() => (state.selectedDecal = decal)}>
-                <img src={decal + '_thumb.png'} alt="brand" />
+                onClick={() => (
+                  (state.selectedDecal = decal), setImagePath(""),
+                  setfullImagePath("")
+                )}
+              >
+                <img src={decal + "_thumb.png"} alt="brand" />
               </div>
             ))}
           </div>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const img = new Image();
+
+                img.src = e.target.result;
+                console.log(img.src);
+                setImagePath(img.src);
+                setfullImagePath('');
+              };
+              reader.readAsDataURL(e.target.files[0]);
+            }}
+          />
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const img = new Image();
+
+                img.src = e.target.result;
+                console.log(img.src);
+                setImagePath('');
+                setfullImagePath(img.src);
+              };
+              reader.readAsDataURL(e.target.files[0]);
+            }}
+          />
         </div>
 
         <button
           className="share"
           style={{ background: snap.selectedColor }}
           onClick={() => {
-            const link = document.createElement('a')
-            link.setAttribute('download', 'canvas.png')
+            const link = document.createElement("a");
+            link.setAttribute("download", "canvas.png");
             link.setAttribute(
-              'href',
+              "href",
               document
-                .querySelector('canvas')
-                .toDataURL('image/png')
-                .replace('image/png', 'image/octet-stream')
-            )
-            link.click()
-          }}>
+                .querySelector("canvas")
+                .toDataURL("image/png")
+                .replace("image/png", "image/octet-stream")
+            );
+            link.click();
+          }}
+        >
           DOWNLOAD
           <AiFillCamera size="1.3em" />
         </button>
@@ -120,11 +167,12 @@ function Customizer({ config }) {
         <button
           className="exit"
           style={{ background: snap.selectedColor }}
-          onClick={() => (state.intro = true)}>
+          onClick={() => (state.intro = true)}
+        >
           GO BACK
           <AiOutlineArrowLeft size="1.3em" />
         </button>
       </div>
     </motion.section>
-  )
+  );
 }

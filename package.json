@@ -17,7 +17,6 @@
     "three": "0.150.1",
     "valtio": "1.10.3"
   },
-  "devDependencies": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
