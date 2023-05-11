@@ -20,10 +20,8 @@ export const App = ({
   imagePath,
   fullimagePath,
 }) => (
-  console.log(`dd`, imagePath, fullimagePath),
-  useEffect(() => {
-    console.log(`imagdsdsdsePath`, imagePath, fullimagePath);
-  }, [imagePath]),
+ 
+ 
   (
     <Canvas
       shadows
