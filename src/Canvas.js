@@ -22,10 +22,8 @@ function AudioPlayer({ src }) {
   useEffect(() => {
     const audio = audioRef.current;  
     audio.src = src; 
-
-   console.log(audio.src);
+ 
     audio.play().catch((error) => console.error('Falha ao reproduzir o áudio:', error));
-
    
     return () => {
       audio.pause();
