@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client'
 import './styles.css'
 import { App as Canvas } from './Canvas'
 import Overlay from './Overlay'
-import { useEffect, useState } from 'react';
+import {   useState } from 'react';
 
 
 function App() {

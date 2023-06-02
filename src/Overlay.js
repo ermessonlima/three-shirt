@@ -104,44 +104,16 @@ function Customizer({ config, setImagePath,setfullImagePath }) {
                   setfullImagePath("")
                 )}
               >
-                <img src={decal + "_thumb.png"} alt="brand" />
+                <img src={decal + "_thumb.png"} alt="brand" style={{
+                  width: "150px",
+                  height: "100px",
+                }} />
               </div>
             ))}
           </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const img = new Image();
-
-                img.src = e.target.result;
-                console.log(img.src);
-                setImagePath(img.src);
-                setfullImagePath('');
-              };
-              reader.readAsDataURL(e.target.files[0]);
-            }}
-          />
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const img = new Image();
-
-                img.src = e.target.result;
-                console.log(img.src);
-                setImagePath('');
-                setfullImagePath(img.src);
-              };
-              reader.readAsDataURL(e.target.files[0]);
-            }}
-          />
+        
+ 
         </div>
 
         <button

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import * as THREE from "three";
@@ -9,91 +9,186 @@ import {
   AccumulativeShadows,
   RandomizedLight,
   useTexture,
-  Decal,
+  Decal, 
 } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { state } from "./store";
 
-export const App = ({
-  position = [0, 0, 2.5],
-  fov = 25,
-  imagePath,
-  fullimagePath,
-}) => (
  
- 
-  (
-    <Canvas
-      shadows
-      gl={{ preserveDrawingBuffer: true }}
-      camera={{ position, fov }}
-      eventSource={document.getElementById("root")}
-      eventPrefix="client"
-    >
-      <ambientLight intensity={0.5} />
-      <Environment preset="city" />
 
-      <CameraRig>
-        <Backdrop />
-        <Center>
-          <Shirt imagePath={imagePath} fullimagePath={fullimagePath} />
-        </Center>
-      </CameraRig>
-    </Canvas>
-  )
-);
+function AudioPlayer({ src }) {
+  const audioRef = useRef(); 
+
+  useEffect(() => {
+    const audio = audioRef.current;  
+    audio.src = src; 
+
+   console.log(audio.src);
+    audio.play().catch((error) => console.error('Falha ao reproduzir o áudio:', error));
+
+   
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [src]);
+
+  return <audio ref={audioRef} />;
+}
+
+
+export const App = ({ position = [0, 0, 2.5], fov = 25, imagePath, fullimagePath }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    function playAudio() {
+      setIsPlaying(true);
+    }
+
+    document.body.addEventListener('click', playAudio);
+
+    return () => {
+      document.body.removeEventListener('click', playAudio);
+    };
+  }, []);
+
+  return (
+    <>
+      <Canvas
+        shadows
+        gl={{ preserveDrawingBuffer: true }}
+        camera={{ position, fov }}
+        eventSource={document.getElementById("root")}
+        eventPrefix="client"
+      >
+        <ambientLight intensity={0.5} />
+        <Environment preset="city" />
+        <CameraRig>
+          <Backdrop />
+          <Center>
+            <Shirt imagePath={imagePath} fullimagePath={fullimagePath} />
+            <Speaker imagePath={imagePath} fullimagePath={fullimagePath} />
+          </Center>
+        </CameraRig>
+      </Canvas>
+      {isPlaying && (
+        <AudioPlayer src={'./decrypto.mp3'} />
+      )}
+    </>
+  );
+};
+
 
 function Shirt(props) {
   const snap = useSnapshot(state);
-  console.log(`props`, props);
+  
   const texture = useTexture(
     props.imagePath ? props.imagePath : `/${snap.selectedDecal}.png`
   );
-  const fulltexture = useTexture(
-    props.fullimagePath ? props.fullimagePath : `/${snap.selectedDecal}.png`
-  );
-
+ 
   const { nodes, materials } = useGLTF("/shirt_baked_collapsed.glb");
+
+ 
 
   useFrame((state, delta) =>
     easing.dampC(materials.lambert1.color, snap.selectedColor, 0.25, delta)
   );
 
-  materials.lambert1.color = new THREE.Color(snap.selectedColor);
 
-  // Cria um novo material MeshBasicMaterial com a cor atual selecionada
+  materials.lambert1.color = new THREE.Color(snap.selectedColor);
+ 
   const material = new THREE.MeshStandardMaterial({
     color: snap.selectedColor,
   });
-
-  // Altera o material do objeto para o novo material criado
+ 
   materials.lambert1 = material;
 
   return (
+    <>
+     
+
     <mesh
       castShadow
       geometry={nodes.T_Shirt_male.geometry}
       material={materials.lambert1}
+      position={[0, 0, 0.1]}
       material-roughness={1}
       {...props}
       dispose={null}
-    >
-      <Decal
-        position={[0, 0, 0]}
-        rotation={[0, 0, 0]}
-        scale={props.fullimagePath ? 0.7 : 0}
-        opacity={props.imagePath ? 0 : 1}
-        map={fulltexture}
-      />
+    > 
       <Decal
         position={[0, 0.04, 0.15]}
         rotation={[0, 0, 0]}
-        scale={ props.fullimagePath.length > 1 ? 0  : 0.15 }
+        scale={  [0.2, 0.15, 0.2]}
         opacity={ 0.7}
         map={texture}
         map-anisotropy={16}
       />
     </mesh>
+ 
+ 
+ 
+      </>
+  );
+}
+
+function Speaker(props) {
+  const snap = useSnapshot(state);
+  
+ 
+
+  const { nodes, materials } = useGLTF("/untitled.glb");
+ 
+
+  useFrame((state, delta) =>
+    easing.dampC(materials[""].color, "white", 0.25, delta)
+  );
+
+
+  materials[""].color = new THREE.Color("white");
+ 
+  const material = new THREE.MeshStandardMaterial({
+    color: "white",
+  });
+ 
+  materials[""] = material;
+ 
+  return (
+    <>
+     
+           
+     <mesh
+      castShadow
+      shadows={false}
+      geometry={nodes.box001.geometry}
+      scale={[0.001,0.001,0.001]}
+      material={materials[""]}
+      rotation={[4.7,-3,0]}
+      position={[0.5,0,- 0.2]}
+      material-roughness={1}
+      {...props}
+      dispose={null}
+    >
+  
+    </mesh>
+
+           
+    <mesh
+      castShadow
+      shadows={false}
+      geometry={nodes.box001.geometry}
+      scale={[0.001,0.001,0.001]}
+      material={materials[""]}
+      rotation={[4.7, 3,0]}
+      position={[-0.5,0,- 0.2]}
+      material-roughness={1}
+      {...props}
+      dispose={null}
+    >
+  
+    </mesh>
+
+      </>
   );
 }
 
@@ -160,6 +255,8 @@ function CameraRig({ children }) {
 }
 
 useGLTF.preload("/shirt_baked_collapsed.glb");
-["/react.png", "/three2.png", "/pmndrs.png", "/pmndrs.png"].forEach(
+["/decrypto.png"].forEach(
   useTexture.preload
 );
+ 
+useGLTF.preload("/untitled.glb");
